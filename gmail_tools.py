@@ -160,27 +160,33 @@ def read_thread(thread_id: str) -> list[dict]:
     return [_format_message(m, include_body=True) for m in thread.get("messages", [])]
 
 
-def mark_as_read(message_ids: list[str]) -> int:
+def mark_as_read(message_ids: list[str]) -> int | dict:
     """Mark messages as read. Returns count of modified messages."""
     if not message_ids:
         return 0
     svc = _get_service()
-    svc.users().messages().batchModify(
-        userId="me",
-        body={"ids": message_ids, "removeLabelIds": ["UNREAD"]}
-    ).execute()
+    try:
+        svc.users().messages().batchModify(
+            userId="me",
+            body={"ids": message_ids, "removeLabelIds": ["UNREAD"]}
+        ).execute()
+    except HttpError as e:
+        return _api_error(e)
     return len(message_ids)
 
 
-def mark_as_unread(message_ids: list[str]) -> int:
+def mark_as_unread(message_ids: list[str]) -> int | dict:
     """Mark messages as unread. Returns count of modified messages."""
     if not message_ids:
         return 0
     svc = _get_service()
-    svc.users().messages().batchModify(
-        userId="me",
-        body={"ids": message_ids, "addLabelIds": ["UNREAD"]}
-    ).execute()
+    try:
+        svc.users().messages().batchModify(
+            userId="me",
+            body={"ids": message_ids, "addLabelIds": ["UNREAD"]}
+        ).execute()
+    except HttpError as e:
+        return _api_error(e)
     return len(message_ids)
 
 

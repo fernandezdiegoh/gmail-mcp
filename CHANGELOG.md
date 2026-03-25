@@ -6,6 +6,13 @@ All notable changes to this project will be documented in this file.
 
 ## 2026-03-24
 
+### v1.0.2 — Token refresh regression + remaining fixes
+
+- Fixed: **token refresh regression** (critical) — removing `client_id`/`client_secret` from token JSON in v1.0.1 broke `creds.refresh()` after the first hour. Now injects credentials from env vars before refresh, keeping secrets off disk while maintaining working refresh flow
+- Fixed: token file race condition — was `write_text()` then `chmod()` (brief window at `644`). Now uses `os.open()` with `0o600` from creation — no window
+- Fixed: `mark_as_read`/`mark_as_unread` missing `HttpError` handling — were the only two functions without try/except, return type updated to `int | dict`
+- Removed: duplicate env var validation — `server.py` validates at startup, `auth.py` no longer has its own `_require_env()` helper
+
 ### v1.0.1 — Review fixes
 
 - Fixed: token file written with `0600` permissions instead of default `644` — OAuth tokens are secrets
