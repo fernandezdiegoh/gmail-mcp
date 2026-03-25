@@ -6,15 +6,33 @@ Minimal Gmail MCP server for Claude Code. Zero third-party code — only officia
 
 | Tool | Description |
 |------|-------------|
-| `search_emails` | Search with Gmail query syntax |
-| `read_email` | Read full email by ID |
-| `read_thread` | Read full thread by ID |
-| `mark_as_read` | Mark emails as read |
-| `mark_as_unread` | Mark emails as unread |
+| `search_emails` | Search with Gmail query syntax (`is:unread`, `from:x`, `after:2026/03/01`) |
+| `read_email` | Read full email by ID (headers + plain text body, HTML fallback) |
+| `read_thread` | Read all messages in a thread |
+| `mark_as_read` | Mark one or more emails as read |
+| `mark_as_unread` | Mark one or more emails as unread |
 | `send_email` | Send email (to, cc, bcc, subject, body) |
 | `create_draft` | Create draft without sending |
 | `reply` | Reply to a thread (supports reply-all) |
 | `list_labels` | List all labels with unread counts |
+
+## Architecture
+
+```
+gmail-mcp/
+├── server.py          # FastMCP server — 9 tools, stdio transport
+├── auth.py            # OAuth2 flow + credential management
+├── gmail_tools.py     # Gmail API wrapper functions
+├── requirements.txt   # 3 dependencies (all official)
+├── setup.sh           # Create venv + install + first-time OAuth
+├── .env.example       # Template for OAuth credentials
+└── .gitignore
+```
+
+- **Transport:** stdio (standard for Claude Code MCPs)
+- **Auth:** OAuth2 with `gmail.modify` scope (covers read + modify + send)
+- **Multi-account:** Two instances in `~/.claude.json` with different env vars
+- **Token storage:** `~/.gmail-mcp/{email}.json` per account, `0600` permissions
 
 ## Setup
 
@@ -33,6 +51,8 @@ cp .env.example .env
 # Edit .env with your OAuth credentials
 bash setup.sh
 ```
+
+`setup.sh` creates the venv, installs deps, and runs the browser OAuth flow.
 
 ### 3. Register in Claude Code
 
@@ -54,17 +74,19 @@ Add to `~/.claude.json` under `"mcpServers"`:
 
 ### Multi-account
 
-Register multiple instances with different keys (e.g., `gmail` and `gmail-personal`) pointing to the same `server.py` but different env vars.
+Register multiple instances with different keys (e.g., `gmail` and `gmail-personal`) pointing to the same `server.py` but different env vars. Each account gets its own token file in `CREDENTIALS_DIR`.
 
 ## Dependencies
 
-- `mcp` — Anthropic's official MCP SDK (FastMCP)
-- `google-auth-oauthlib` — Google OAuth2 (official)
-- `google-api-python-client` — Google API client (official)
+| Package | Purpose | Source |
+|---------|---------|--------|
+| `mcp` | MCP SDK (FastMCP) | Anthropic (official) |
+| `google-auth-oauthlib` | OAuth2 flow | Google (official) |
+| `google-api-python-client` | Gmail API client | Google (official) |
 
 ## Requirements
 
-- Python 3.10+ (uses `list[str]` type hints)
+- Python 3.10+
 
 ## License
 
