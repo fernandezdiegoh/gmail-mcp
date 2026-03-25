@@ -13,10 +13,10 @@ fi
 echo "Installing dependencies..."
 .venv/bin/pip install -q -r requirements.txt
 
-# Check for env vars
+# Load .env if env vars not set
 if [ -z "$GOOGLE_OAUTH_CLIENT_ID" ] || [ -z "$USER_EMAIL" ]; then
     if [ -f .env ]; then
-        export $(grep -v '^#' .env | xargs)
+        set -a; source .env; set +a
     fi
 fi
 

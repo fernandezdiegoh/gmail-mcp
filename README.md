@@ -62,6 +62,10 @@ Register multiple instances with different keys (e.g., `gmail` and `gmail-person
 - `google-auth-oauthlib` — Google OAuth2 (official)
 - `google-api-python-client` — Google API client (official)
 
+## Requirements
+
+- Python 3.10+ (uses `list[str]` type hints)
+
 ## License
 
 MIT

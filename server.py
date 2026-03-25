@@ -6,9 +6,15 @@ import sys
 
 from mcp.server.fastmcp import FastMCP
 
+# Validate required env vars at startup
+for var in ("USER_EMAIL", "GOOGLE_OAUTH_CLIENT_ID", "GOOGLE_OAUTH_CLIENT_SECRET"):
+    if not os.environ.get(var):
+        print(f"ERROR: {var} env var is required.", file=sys.stderr)
+        sys.exit(1)
+
 import gmail_tools
 
-email = os.environ.get("USER_EMAIL", "unknown")
+email = os.environ["USER_EMAIL"]
 mcp = FastMCP(f"Gmail ({email})")
 
 
